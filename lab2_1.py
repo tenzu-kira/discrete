@@ -1,9 +1,6 @@
-from itertools import permutations
+from itertools import product
 
-# Исходное слово
 word = "КОМБИНАТОРИКА"
-
-# Уникальные буквы и их количество
 letters_count = {
     'К': 2,
     'О': 2,
@@ -16,22 +13,22 @@ letters_count = {
     'Р': 1
 }
 
-# Длина слова, которое нужно составить
 word_length = 6
 
-# Генерация всех возможных комбинаций
-unique_words = set()
+unique_letters = list(letters_count.keys())
 
-# Используем permutations для генерации всех возможных упорядоченных комбинаций
-for combo in permutations(word, word_length):
-    # Проверяем, что комбинация не превышает доступное количество букв
-    valid = True
+# Функция для проверки, что комбинация не превышает доступное количество букв
+def is_valid(combo):
     for letter in set(combo):
-        if combo.count(letter) > letters_count.get(letter, 0):
-            valid = False
-            break
-    if valid:
-        unique_words.add(combo)
+        if combo.count(letter) > letters_count[letter]:
+            return False
+    return True
 
-# Вывод результата
-print(f"Количество различных слов: {len(unique_words)}")
+valid_combinations = set()
+
+# Используем product для генерации всех возможных комбинаций
+for combo in product(unique_letters, repeat=word_length):
+    if is_valid(combo):
+        valid_combinations.add(combo)
+
+print(f"Количество различных слов: {len(valid_combinations)}")
