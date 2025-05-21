@@ -1,5 +1,5 @@
 from collections import deque
-
+from random import randint
 
 class Edge:
     def __init__(self, to, rev, capacity):
@@ -93,18 +93,56 @@ class FlowNetwork:
 # Пример использования
 if __name__ == "__main__":
     # Создаём сеть из примера
-    network = FlowNetwork(4)
-    # Нумерация вершин: 0 - s, 1 - a, 2 - b, 3 - t
-    network.add_edge(0, 1, 3)  # s -> a
-    network.add_edge(1, 3, 2)  # a -> t
-    network.add_edge(0, 2, 2)  # s -> b
-    network.add_edge(2, 3, 3)  # b -> t
-    network.add_edge(1, 2, 1)  # a -> b
+    network = FlowNetwork(8)
+    # Нумерация вершин: 0 - s, 1 - a, 2 - b, 3 - c, 4 - d, 5 - p, 6 - k, 7 - t
+    network.add_edge(0, 1, 13)  # s -> a
+    network.add_edge(0, 4, 15)  # s -> d
+    network.add_edge(0, 5, 7)  # s -> p
+    network.add_edge(1, 4, 12)  # a -> d
+    network.add_edge(1, 6, 11)  # a -> k
+    network.add_edge(1, 2, 6)  # a -> b
+    network.add_edge(2, 7, 5)  # b -> t
+    network.add_edge(3, 2, 11)  # c -> b
+    network.add_edge(3, 7, 14)  # c -> t
+    network.add_edge(4, 3, 5)  # d -> c
+    network.add_edge(5, 2, 13)  # p -> b
+    network.add_edge(5, 6, 12)  # p -> k
+    network.add_edge(6, 7, 6)  # k -> t
 
-    s, t = 0, 3
+    s, t = 0, 7
     max_flow = network.max_flow(s, t)
     S, T = network.min_cut(s)
+    print("Пример из лабораторной")
+    print(f"Максимальный поток: {max_flow}")
+    print(f"Минимальный разрез:")
+    print(f"S = {S} (вершины, достижимые из истока в остаточной сети)")
+    print(f"T = {T} (остальные вершины)")
+    print(f"Пропускная способность разреза = {max_flow}")
+    print("\n \n \n")
 
+
+    #Случайные значения
+    network1 = FlowNetwork(8)
+    # Нумерация вершин: 0 - s, 1 - a, 2 - b, 3 - c, 4 - d, 5 - p, 6 - k, 7 - t
+    network1.add_edge(0, 1, randint(100, 1000))  # s -> a
+    network1.add_edge(0, 4, randint(100, 1000))  # s -> d
+    network1.add_edge(0, 5, randint(100, 1000))  # s -> p
+    network1.add_edge(1, 4, randint(100, 1000))  # a -> d
+    network1.add_edge(1, 6, randint(100, 1000))  # a -> k
+    network1.add_edge(1, 2, randint(100, 1000))  # a -> b
+    network1.add_edge(2, 7, randint(100, 1000))  # b -> t
+    network1.add_edge(3, 2, randint(100, 1000))  # c -> b
+    network1.add_edge(3, 7, randint(100, 1000))  # c -> t
+    network1.add_edge(4, 3, randint(100, 1000))  # d -> c
+    network1.add_edge(5, 2, randint(100, 1000))  # p -> b
+    network1.add_edge(5, 6, randint(100, 1000))  # p -> k
+    network1.add_edge(6, 7, randint(100, 1000))  # k -> t
+
+    s, t = 0, 7
+    max_flow = network1.max_flow(s, t)
+    S, T = network1.min_cut(s)
+
+    print("Пример со случайными значениями")
     print(f"Максимальный поток: {max_flow}")
     print(f"Минимальный разрез:")
     print(f"S = {S} (вершины, достижимые из истока в остаточной сети)")
