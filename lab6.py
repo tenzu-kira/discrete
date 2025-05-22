@@ -3,21 +3,18 @@ from random import randint
 
 class Edge:
     def __init__(self, to, rev, capacity):
-        self.to = to  # Куда ведёт ребро
-        self.rev = rev  # Обратное ребро
-        self.capacity = capacity  # Пропускная способность
-        self.flow = 0  # Текущий поток
-
+        self.to = to
+        self.rev = rev
+        self.capacity = capacity
+        self.flow = 0
 
 class FlowNetwork:
     def __init__(self, n):
         self.size = n
-        self.graph = [[] for _ in range(n)]  # Список смежности
+        self.graph = [[] for _ in range(n)]
 
     def add_edge(self, fr, to, capacity):
-        # Прямое ребро
         forward = Edge(to, len(self.graph[to]), capacity)
-        # Обратное ребро (для остаточной сети)
         backward = Edge(fr, len(self.graph[fr]), 0)
         self.graph[fr].append(forward)
         self.graph[to].append(backward)
@@ -84,30 +81,60 @@ class FlowNetwork:
                     visited[edge.to] = True
                     queue.append(edge.to)
 
-        # Вершины, достижимые из s в остаточной сети
         S = [i for i in range(self.size) if visited[i]]
         T = [i for i in range(self.size) if not visited[i]]
         return S, T
 
+    def verify_min_cut(self, max_flow_value, S, T):
+        print("\n=== Проверка минимального разреза ===")
+        print(f"Множество S: {S}")
+        print(f"Множество T: {T}")
 
-# Пример использования
+        edges_in_cut = []
+        total_capacity = 0
+
+        for u in S:
+            for edge in self.graph[u]:
+                if edge.to in T and edge.capacity > 0:  # Добавляем проверку capacity > 0
+                    edges_in_cut.append((u, edge.to, edge.capacity))
+                    total_capacity += edge.capacity
+
+        print("\nРёбра разреза (S -> T):")
+        for u, v, cap in edges_in_cut:
+            print(f"{u} -> {v} (пропускная способность: {cap})")
+
+        print(f"\nСуммарная пропускная способность разреза: {total_capacity}")
+        print(f"Максимальный поток: {max_flow_value}")
+
+        if total_capacity == max_flow_value:
+            print("\n✅ Проверка пройдена: сумма пропускных способностей равна максимальному потоку.")
+            print("Разрез корректен и является минимальным.")
+        else:
+            print("\n❌ Ошибка: сумма пропускных способностей НЕ равна максимальному потоку!")
+            print("Возможные причины:")
+            print("- Неправильно определён разрез (вершины S/T)")
+            print("- Ошибка в вычислении максимального потока")
+            print("- Пропущены некоторые рёбра разреза")
+
+        return total_capacity == max_flow_value
+
 if __name__ == "__main__":
-    # Создаём сеть из примера
-    network = FlowNetwork(8)
+    # Пример из лабораторной
     # Нумерация вершин: 0 - s, 1 - a, 2 - b, 3 - c, 4 - d, 5 - p, 6 - k, 7 - t
+    network = FlowNetwork(8)
     network.add_edge(0, 1, 13)  # s -> a
     network.add_edge(0, 4, 15)  # s -> d
-    network.add_edge(0, 5, 7)  # s -> p
+    network.add_edge(0, 5, 7)   # s -> p
     network.add_edge(1, 4, 12)  # a -> d
     network.add_edge(1, 6, 11)  # a -> k
-    network.add_edge(1, 2, 6)  # a -> b
-    network.add_edge(2, 7, 5)  # b -> t
+    network.add_edge(1, 2, 6)   # a -> b
+    network.add_edge(2, 7, 5)   # b -> t
     network.add_edge(3, 2, 11)  # c -> b
     network.add_edge(3, 7, 14)  # c -> t
-    network.add_edge(4, 3, 5)  # d -> c
+    network.add_edge(4, 3, 5)   # d -> c
     network.add_edge(5, 2, 13)  # p -> b
     network.add_edge(5, 6, 12)  # p -> k
-    network.add_edge(6, 7, 6)  # k -> t
+    network.add_edge(6, 7, 6)   # k -> t
 
     s, t = 0, 7
     max_flow = network.max_flow(s, t)
@@ -115,36 +142,33 @@ if __name__ == "__main__":
     print("Пример из лабораторной")
     print(f"Максимальный поток: {max_flow}")
     print(f"Минимальный разрез:")
-    print(f"S = {S} (вершины, достижимые из истока в остаточной сети)")
-    print(f"T = {T} (остальные вершины)")
-    print(f"Пропускная способность разреза = {max_flow}")
-    print("\n \n \n")
+    print(f"S = {S}")
+    print(f"T = {T}")
+    network.verify_min_cut(max_flow, S, T)
 
-
-    #Случайные значения
+    # Случайные значения
     network1 = FlowNetwork(8)
     # Нумерация вершин: 0 - s, 1 - a, 2 - b, 3 - c, 4 - d, 5 - p, 6 - k, 7 - t
-    network1.add_edge(0, 1, randint(100, 1000))  # s -> a
-    network1.add_edge(0, 4, randint(100, 1000))  # s -> d
-    network1.add_edge(0, 5, randint(100, 1000))  # s -> p
-    network1.add_edge(1, 4, randint(100, 1000))  # a -> d
-    network1.add_edge(1, 6, randint(100, 1000))  # a -> k
-    network1.add_edge(1, 2, randint(100, 1000))  # a -> b
-    network1.add_edge(2, 7, randint(100, 1000))  # b -> t
-    network1.add_edge(3, 2, randint(100, 1000))  # c -> b
-    network1.add_edge(3, 7, randint(100, 1000))  # c -> t
-    network1.add_edge(4, 3, randint(100, 1000))  # d -> c
-    network1.add_edge(5, 2, randint(100, 1000))  # p -> b
-    network1.add_edge(5, 6, randint(100, 1000))  # p -> k
-    network1.add_edge(6, 7, randint(100, 1000))  # k -> t
+    network1.add_edge(0, 1, randint(100, 1000))
+    network1.add_edge(0, 4, randint(100, 1000))
+    network1.add_edge(0, 5, randint(100, 1000))
+    network1.add_edge(1, 4, randint(100, 1000))
+    network1.add_edge(1, 6, randint(100, 1000))
+    network1.add_edge(1, 2, randint(100, 1000))
+    network1.add_edge(2, 7, randint(100, 1000))
+    network1.add_edge(3, 2, randint(100, 1000))
+    network1.add_edge(3, 7, randint(100, 1000))
+    network1.add_edge(4, 3, randint(100, 1000))
+    network1.add_edge(5, 2, randint(100, 1000))
+    network1.add_edge(5, 6, randint(100, 1000))
+    network1.add_edge(6, 7, randint(100, 1000))
 
     s, t = 0, 7
     max_flow = network1.max_flow(s, t)
     S, T = network1.min_cut(s)
-
-    print("Пример со случайными значениями")
+    print("\nПример со случайными значениями")
     print(f"Максимальный поток: {max_flow}")
     print(f"Минимальный разрез:")
-    print(f"S = {S} (вершины, достижимые из истока в остаточной сети)")
-    print(f"T = {T} (остальные вершины)")
-    print(f"Пропускная способность разреза = {max_flow}")
+    print(f"S = {S}")
+    print(f"T = {T}")
+    network1.verify_min_cut(max_flow, S, T)
