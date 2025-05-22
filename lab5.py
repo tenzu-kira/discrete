@@ -130,18 +130,115 @@ def compute_min_distance(codewords):
     return min_dist
 
 
+def print_code_distance_table(codewords, max_rows=20, exclude_zero=True):
+    """
+    Выводит фрагмент таблицы кодовых расстояний между случайными кодовыми словами.
+
+    Параметры:
+        codewords (np.array): Массив всех кодовых слов
+        max_rows (int): Максимальное количество строк для вывода
+        exclude_zero (bool): Исключать ли нулевое кодовое слово из сравнений
+    """
+    # Убираем нулевое слово при необходимости
+    filtered_codewords = codewords[1:] if exclude_zero else codewords
+    num_codewords = len(filtered_codewords)
+
+    print("Фрагмент таблицы кодовых расстояний (случайные пары):")
+    print(f"{'Кодовое слово 1':<20} {'Кодовое слово 2':<20} {'Расстояние':<10}")
+    print("-" * 55)
+
+    # Выбираем случайные пары для демонстрации
+    rng = np.random.default_rng()
+    indices = rng.choice(num_codewords, size=min(max_rows * 2, num_codewords), replace=False)
+
+    count = 0
+    for i in range(0, len(indices), 2):
+        if i + 1 >= len(indices):
+            break
+
+        cw1 = filtered_codewords[indices[i]]
+        cw2 = filtered_codewords[indices[i + 1]]
+        distance = np.sum(cw1 != cw2)
+
+        # Красивое представление векторов
+        str_cw1 = ''.join(map(str, cw1))
+        str_cw2 = ''.join(map(str, cw2))
+
+        print(f"{str_cw1:<20} {str_cw2:<20} {distance:<10}")
+        count += 1
+        if count >= max_rows:
+            break
+
+
 # Пример использования
-true_codeword = codewords[19000]
-received_vec = true_codeword.copy()
-received_vec[3] ^= 1  # Добавляем ошибку на 3-й позиции
-# Исправление ошибки
-corrected_vec, message = correct_errors(received_vec, H, syndrome_table)
-print("Received:", received_vec)
-print("Corrected:", corrected_vec)
-print("Status:", message)
-print("Match original:", np.array_equal(corrected_vec, true_codeword))
-
-
+# Вычисляем минимальное расстояние кода
 min_distance = compute_min_distance(codewords)
-print("Минимальное кодовое расстояние:", min_distance)
-print(G[1][1])
+print(f"Минимальное расстояние кода (d): {min_distance}")
+
+# Вычисляем кратность исправляемых ошибок
+t = (min_distance - 1) // 2
+print(f"Кратность гарантированно исправляемых ошибок (t): {t}")
+
+# Вычисляем кратность обнаруживаемых ошибок
+s = min_distance - 1
+print(f"Кратность гарантированно обнаруживаемых ошибок (s): {s}")
+
+# Создаем кодовое слово (первый информационный бит = 1)
+info_bits = np.zeros(k, dtype=int)
+info_bits[0] = 1
+codeword = (info_bits @ G) % 2
+
+# Создаем ошибку в позиции 5
+error = np.zeros(n, dtype=int)
+error[5] = 1
+received = (codeword + error) % 2
+syndrome = compute_syndrome(error, H)
+syndrome_out = [int(i) for i in syndrome]
+# Исправляем ошибку
+corrected, message = correct_errors(received, H, syndrome_table)
+print("\nПример 1: Исправление одиночной ошибки")
+print("Переданное кодовое слово:", codeword)
+print("Вектор ошибки:", error)
+print("Принятый вектор:", received)
+print("Результат коррекции:", message)
+print("Исправленный вектор:", corrected)
+print("Синдром:", syndrome_out)
+
+# Создаем двойную ошибку (позиции 3 и 7)
+error = np.zeros(n, dtype=int)
+error[3] = 1
+error[7] = 1
+received = (codeword + error) % 2
+syndrome = compute_syndrome(error, H)
+syndrome_out = [int(i) for i in syndrome]
+# Пытаемся исправить
+corrected, message = correct_errors(received, H, syndrome_table)
+print("\nПример 2: Обнаружение двойной ошибки")
+print("Переданное кодовое слово:", codeword)
+print("Вектор ошибки:", error)
+print("Принятый вектор:", received)
+print("Результат коррекции:", message)
+print("Синдром:", syndrome_out)
+
+# Создаем вектор двойной ошибки
+error = np.zeros(n, dtype=int)
+error[0] = 1  # Ошибка в позиции 0
+error[10] = 1  # Ошибка в позиции 10
+
+# Вычисляем синдром
+syndrome = compute_syndrome(error, H)
+syndrome_out = [int(i) for i in syndrome]
+print("\nВектор ошибки, который обнаруживается, но не исправляется:")
+print("Вектор ошибки:", error)
+print("Синдром:", syndrome_out)
+print("Синдром есть в таблице?", syndrome in syndrome_table)
+
+# Проверяем, что эта ошибка действительно не исправляется
+received = (codeword + error) % 2
+corrected, message = correct_errors(received, H, syndrome_table)
+print("Результат попытки коррекции:", message)
+print()
+print_code_distance_table(codewords)
+print()
+print("Порождающая матрица:")
+print(G)
